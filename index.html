@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="pt-BR" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Calculadora de Créditos do Copilot Cowork</title>
+<style>
+  :root{
+    --bg:#f3f5f9; --surface:#ffffff; --surface-2:#f7f9fc; --ink:#1b1f27;
+    --muted:#5b6472; --line:#e3e8f0; --brand:#0f6cbd; --brand-ink:#0a4d86;
+    --accent:#7c5cff; --light:#2aa775; --medium:#e0931a; --heavy:#d6483b;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#11151c; --surface:#1a212b; --surface-2:#212a36; --ink:#eef2f7;
+      --muted:#9aa6b4; --line:#2c3744; --brand:#3aa0ec; --brand-ink:#8fc7f3;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  /* manual theme override (button) — wins over the media query above */
+  :root[data-theme="light"]{
+    --bg:#f3f5f9; --surface:#ffffff; --surface-2:#f7f9fc; --ink:#1b1f27;
+    --muted:#5b6472; --line:#e3e8f0; --brand:#0f6cbd; --brand-ink:#0a4d86;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+  }
+  :root[data-theme="dark"]{
+    --bg:#11151c; --surface:#1a212b; --surface-2:#212a36; --ink:#eef2f7;
+    --muted:#9aa6b4; --line:#2c3744; --brand:#3aa0ec; --brand-ink:#8fc7f3;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px; margin-inline:auto; padding:24px 18px 56px}
+  header.top{display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; justify-content:space-between; margin-bottom:8px}
+  .brandline{display:flex; align-items:center; gap:12px}
+  .logo{width:42px; height:42px; border-radius:11px; background:linear-gradient(135deg,var(--brand),var(--accent)); display:flex; align-items:center; justify-content:center; flex:none; box-shadow:var(--shadow)}
+  .logo svg{width:24px; height:24px}
+  h1{font-size:1.5rem; margin:0; letter-spacing:-.01em}
+  .sub{color:var(--muted); font-size:.92rem; margin-top:2px; max-width:64ch}
+  .headctrls{display:flex; gap:8px; align-items:center}
+  .themebtn{border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:1rem; line-height:1; width:38px; height:38px; border-radius:999px; cursor:pointer; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center}
+  .themebtn:hover{border-color:var(--brand)}
+  .langs{display:flex; gap:6px; background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:4px; box-shadow:var(--shadow)}
+  .langs button{border:0; background:transparent; color:var(--muted); font:inherit; font-size:.82rem; font-weight:600; padding:6px 12px; border-radius:999px; cursor:pointer}
+  .langs button.active{background:var(--brand); color:#fff}
+
+  .brandrow{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+  .brand-chip{display:inline-flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--line); padding:5px 13px 5px 9px; border-radius:999px; font-size:.84rem; font-weight:700; color:var(--ink); box-shadow:var(--shadow)}
+  .brand-chip svg{width:18px; height:18px; flex:none}
+
+  .pills{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  .price-pill{display:inline-flex; align-items:center; gap:6px; background:var(--surface-2); border:1px solid var(--line); padding:5px 11px; border-radius:999px; font-size:.78rem; font-weight:600; color:var(--muted)}
+
+  .hiw{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+  .hiw .s{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; display:flex; gap:11px; align-items:flex-start}
+  .hiw .num{flex:none; width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg,var(--brand),var(--accent)); color:#fff; font-weight:700; font-size:.9rem; display:flex; align-items:center; justify-content:center}
+  .hiw .st{font-weight:700; font-size:.92rem; margin-bottom:2px}
+  .hiw .sd{font-size:.82rem; color:var(--muted)}
+
+  .results{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:14px}
+  .rcard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px 18px 16px; box-shadow:var(--shadow)}
+  .rcard .lbl{font-size:.78rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.03em}
+  .rcard .val{font-size:1.9rem; font-weight:700; margin-top:6px; letter-spacing:-.02em; line-height:1.1}
+  .rcard .hint{font-size:.8rem; color:var(--muted); margin-top:5px}
+  .rcard.primary{background:linear-gradient(135deg,var(--brand),var(--brand-ink)); border-color:transparent; color:#fff}
+  .rcard.primary .lbl,.rcard.primary .hint{color:rgba(255,255,255,.85)}
+
+  .annualstrip{display:flex; flex-wrap:wrap; gap:8px 22px; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin-top:14px; font-size:.86rem}
+  .annualstrip .k{color:var(--muted); font-weight:600}
+  .annualstrip .v{font-weight:700; font-variant-numeric:tabular-nums}
+  .annualstrip .badge{margin-inline-start:auto; background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:4px 11px; font-weight:700; font-size:.8rem}
+  .annualstrip .badge.on{background:rgba(42,167,117,.14); border-color:transparent; color:var(--light)}
+
+  .toolbar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:18px 0 6px}
+  .toolbar .grp{display:flex; gap:6px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:4px}
+  .chip{border:0; background:transparent; color:var(--ink); font:inherit; font-size:.84rem; font-weight:600; padding:7px 13px; border-radius:7px; cursor:pointer}
+  .chip.active{background:var(--brand); color:#fff}
+  .btn{border:1px solid var(--line); background:var(--surface); color:var(--ink); font:inherit; font-size:.84rem; font-weight:600; padding:8px 14px; border-radius:9px; cursor:pointer; display:inline-flex; gap:7px; align-items:center}
+  .btn:hover{border-color:var(--brand)}
+  .btn.ghost{background:transparent}
+  .spacer{flex:1}
+
+  section.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; margin-top:16px}
+  .step{display:flex; gap:10px; align-items:baseline; margin-bottom:4px}
+  .step .n{flex:none; width:24px; height:24px; border-radius:7px; background:var(--brand); color:#fff; font-size:.8rem; font-weight:700; display:flex; align-items:center; justify-content:center}
+  .step h2{font-size:1.05rem; margin:0}
+  .desc{color:var(--muted); font-size:.86rem; margin:2px 0 0 34px}
+
+  .tablewrap{overflow-x:auto; margin-top:14px}
+  table.ptable{width:100%; border-collapse:collapse; min-width:660px}
+  table.ptable th,table.ptable td{padding:9px 8px; text-align:start; font-size:.88rem; border-bottom:1px solid var(--line)}
+  table.ptable thead th{font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); font-weight:700; vertical-align:bottom}
+  th .tag{display:inline-block; width:9px; height:9px; border-radius:3px; margin-inline-end:5px; vertical-align:middle}
+  td.persona{font-weight:600; min-width:190px}
+  td.persona small{display:block; font-weight:400; color:var(--muted); font-size:.76rem}
+  tbody tr:hover{background:var(--surface-2)}
+  td.calc{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap}
+  tfoot td{font-weight:700; border-top:2px solid var(--line); border-bottom:0; font-variant-numeric:tabular-nums}
+  input[type=number]{width:74px; padding:7px 8px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); border-radius:8px; font:inherit; font-size:.88rem; text-align:end; -moz-appearance:textfield}
+  input[type=number]:focus{outline:2px solid var(--brand); outline-offset:0; border-color:var(--brand)}
+  input.users{width:84px}
+
+  .exgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:10px}
+  .ex{border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--surface)}
+  .ex .eh{display:flex; align-items:center; gap:8px; font-weight:700; font-size:.92rem}
+  .ex .eh .tag{width:11px; height:11px; border-radius:3px}
+  .ex .erange{font-size:.78rem; font-weight:700; color:var(--brand); margin:7px 0}
+  .ex .ebody{font-size:.82rem; color:var(--muted)}
+
+  .adv-head{display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none}
+  .adv-head .chev{transition:transform .2s}
+  .adv.open .chev{transform:rotate(90deg)}
+  .adv-body{display:none; margin-top:14px}
+  .adv.open .adv-body{display:block}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px}
+  .field label{display:block; font-size:.82rem; font-weight:700; color:var(--ink); margin-bottom:5px}
+  .field input,.field select{width:100%; padding:9px 10px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); border-radius:9px; font:inherit; font-size:.9rem}
+  .field input{text-align:end}
+  .field .help{font-size:.76rem; color:var(--muted); margin-top:5px}
+  .creditsrow{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:4px}
+  .cbox{border:1px solid var(--line); border-radius:11px; padding:12px; background:var(--surface-2)}
+  .cbox .ct{display:flex; align-items:center; gap:7px; font-weight:700; font-size:.88rem}
+  .cbox .ct .tag{width:11px; height:11px; border-radius:3px}
+  .cbox .cd{font-size:.76rem; color:var(--muted); margin:6px 0 9px}
+  .cbox input{width:100%; text-align:end}
+
+  .bars{margin-top:6px}
+  .barrow{display:grid; grid-template-columns:160px 1fr auto; gap:12px; align-items:center; padding:7px 0}
+  .barrow .bl{font-size:.85rem; font-weight:600}
+  .bartrack{height:12px; background:var(--surface-2); border-radius:999px; overflow:hidden; border:1px solid var(--line)}
+  .barfill{height:100%; border-radius:999px; transition:width .35s ease}
+  .barrow .bv{font-size:.82rem; font-variant-numeric:tabular-nums; color:var(--muted); white-space:nowrap}
+  .splitgrid{display:grid; grid-template-columns:1fr 1fr; gap:22px}
+
+  .concepts{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px}
+  .concept{border:1px solid var(--line); border-radius:12px; padding:15px; background:var(--surface-2)}
+  .concept h3{margin:0 0 6px; font-size:.95rem; display:flex; gap:8px; align-items:center}
+  .concept p{margin:0; font-size:.84rem; color:var(--muted)}
+  .concept.full{grid-column:1 / -1}
+  .subh{font-size:.82rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); font-weight:700; margin:18px 0 0}
+  table.mini{width:100%; border-collapse:collapse; margin-top:10px}
+  table.mini th,table.mini td{padding:7px 8px; font-size:.82rem; text-align:start; border-bottom:1px solid var(--line)}
+  table.mini th{font-size:.7rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted)}
+  table.mini.p3 td:nth-child(2),table.mini.p3 td:nth-child(3){text-align:end; font-variant-numeric:tabular-nums}
+  table.mini.tt td:last-child{text-align:end; font-variant-numeric:tabular-nums; white-space:nowrap}
+  .dotc{display:inline-block; width:10px; height:10px; border-radius:3px; margin-inline-end:7px; vertical-align:middle}
+  .foot-note{font-size:.74rem; color:var(--muted); margin-top:8px}
+  .infobox{background:var(--surface-2); border:1px solid var(--line); border-inline-start:4px solid var(--brand); border-radius:10px; padding:12px 14px; font-size:.84rem; color:var(--muted); margin-top:6px}
+  .infobox b{color:var(--ink)}
+
+  footer{margin-top:26px; border-top:1px solid var(--line); padding-top:18px}
+  footer .sig{display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:10px 13px; box-shadow:var(--shadow)}
+  footer .sig .av{flex:none; width:30px; height:30px; border-radius:9px; background:linear-gradient(135deg,var(--brand),var(--accent)); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:.7rem; letter-spacing:.5px}
+  footer .sig .sg{font-weight:700; font-size:.82rem}
+  footer .sig .sgs{font-size:.71rem; color:var(--muted)}
+  footer h4{margin:16px 0 6px; font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted)}
+  footer .srclead{font-size:.74rem; color:var(--muted); margin:0 0 6px}
+  footer ul.src{margin:0; padding-inline-start:16px; font-size:.72rem; color:var(--muted)}
+  footer ul.src li{margin:2px 0}
+  footer p.disc{margin:5px 0; font-size:.71rem; color:var(--muted)}
+  footer .pub{font-size:.71rem; color:var(--muted); margin-top:9px}
+
+  @media (max-width:780px){
+    .hiw,.results,.exgrid,.concepts{grid-template-columns:1fr}
+    .splitgrid{grid-template-columns:1fr}
+    .creditsrow{grid-template-columns:1fr}
+    .barrow{grid-template-columns:110px 1fr auto}
+    h1{font-size:1.3rem}
+  }
+  @media print{
+    body{background:#fff}
+    .langs,.toolbar,.adv-head .chev,.themebtn{display:none}
+    .adv-body{display:block!important}
+    section.card,.rcard{box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brandline">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L4 6v6c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6l-8-4z" fill="#fff" opacity=".25"/>
+          <path d="M9 12.5l2 2 4-4.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1 data-i18n="title">Calculadora de Créditos do Copilot Cowork</h1>
+        <div class="sub" data-i18n="subtitle">Estime, em poucos cliques, quantos créditos do Copilot e quanto de orçamento a sua organização gastaria com o Cowork — sem precisar entender de tecnologia.</div>
+      </div>
+    </div>
+    <div class="headctrls">
+      <button class="themebtn" id="theme-btn" title="Tema claro / escuro" aria-label="Alternar tema claro ou escuro">🌙</button>
+      <div class="langs" role="group" aria-label="Idioma">
+        <button data-lang="pt" class="active">PT</button>
+        <button data-lang="en">EN</button>
+        <button data-lang="es">ES</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="brandrow">
+    <span class="brand-chip">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="cpg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2aa0ff"/><stop offset=".5" stop-color="#7c5cff"/><stop offset="1" stop-color="#ff5fa2"/></linearGradient></defs><path d="M12 1.6c.7 5 4.4 8.7 9.4 9.4-5 .7-8.7 4.4-9.4 9.4-.7-5-4.4-8.7-9.4-9.4 5-.7 8.7-4.4 9.4-9.4z" fill="url(#cpg)"/></svg>
+      Copilot
+    </span>
+    <span class="brand-chip">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2.5" y="6" width="11" height="11" rx="3.2" fill="#0f6cbd"/><rect x="10.5" y="9" width="11" height="11" rx="3.2" fill="#7c5cff" opacity=".88"/></svg>
+      Cowork
+    </span>
+  </div>
+
+  <div class="pills">
+    <span class="price-pill"><span>💳</span><span data-i18n="pill1">1 crédito = US$ 0,01 (pago por uso)</span></span>
+    <span class="price-pill"><span>🧠</span><span data-i18n="pill2">Estimativas com base no modelo Anthropic Opus 4.8</span></span>
+    <span class="price-pill"><span>🔒</span><span data-i18n="pill3">Funciona offline · não coleta nenhum dado</span></span>
+  </div>
+
+  <!-- ============ ENTENDA OS CONCEITOS (topo, abre/fecha) ============ -->
+  <section class="card adv" id="concepts-card">
+    <div class="adv-head" id="concepts-head">
+      <div class="step" style="margin:0"><span class="n">?</span><h2 data-i18n="concTitle">Entenda os conceitos — comece por aqui</h2></div>
+      <span class="chev">▶</span>
+    </div>
+    <div class="adv-body">
+      <p class="desc" style="margin:0 0 14px 0" data-i18n="concLead">Se o assunto é novo para você, leia esta seção antes de calcular. Ela explica, em linguagem simples, o que são os créditos, como o Cowork os consome e como esta calculadora chega ao valor.</p>
+
+      <div class="hiw">
+        <div class="s"><div class="num">1</div><div><div class="st" data-i18n="hiw1t">Defina os usuários</div><div class="sd" data-i18n="hiw1d">Agrupe as pessoas por perfil e diga quantas vão usar o Cowork.</div></div></div>
+        <div class="s"><div class="num">2</div><div><div class="st" data-i18n="hiw2t">Estime a intensidade</div><div class="sd" data-i18n="hiw2d">Quantas tarefas leves, médias e pesadas cada perfil faz por mês.</div></div></div>
+        <div class="s"><div class="num">3</div><div><div class="st" data-i18n="hiw3t">Veja o resultado</div><div class="sd" data-i18n="hiw3d">Os créditos e o custo aparecem na hora. Ajuste e compare cenários.</div></div></div>
+      </div>
+
+      <div class="subh" data-i18n="ttTitle">Tipos de tarefa, modelo típico e créditos</div>
+      <table class="mini tt" id="tttable"></table>
+      <div class="foot-note" data-i18n="ttFoot">Mapeamento ilustrativo.</div>
+
+      <div class="subh" data-i18n="exTitle">Exemplos reais de tarefa</div>
+      <div class="exgrid">
+        <div class="ex">
+          <div class="eh"><span class="tag" style="background:var(--light)"></span><span data-i18n="exLightT">Tarefa leve</span></div>
+          <div class="erange" data-i18n="exLightR">70–200 créditos</div>
+          <div class="ebody" data-i18n="exLightB">Ex.: “Crie minha atualização semanal de status para a equipe com minhas prioridades e as reuniões executivas da agenda. Salve como rascunho.”</div>
+        </div>
+        <div class="ex">
+          <div class="eh"><span class="tag" style="background:var(--medium)"></span><span data-i18n="exMedT">Tarefa média</span></div>
+          <div class="erange" data-i18n="exMedR">400–600 créditos</div>
+          <div class="ebody" data-i18n="exMedB">Ex.: “Prepare minha reunião com o cliente: reúna e-mails, agenda, dados do CRM e contexto de arquivos em um documento de briefing.”</div>
+        </div>
+        <div class="ex">
+          <div class="eh"><span class="tag" style="background:var(--heavy)"></span><span data-i18n="exHeavyT">Tarefa pesada</span></div>
+          <div class="erange" data-i18n="exHeavyR">acima de 1.500 créditos</div>
+          <div class="ebody" data-i18n="exHeavyB">Ex.: “Analise 6 meses de dados de uso do produto, identifique padrões e produza uma análise pronta para a liderança.”</div>
+        </div>
+      </div>
+
+      <div class="concepts">
+        <div class="concept">
+          <h3>💳 <span data-i18n="c1t">O que é um Copilot Credit?</span></h3>
+          <p data-i18n="c1b">É a “moeda” única que a Microsoft usa para cobrar o uso de IA sob demanda.</p>
+        </div>
+        <div class="concept">
+          <h3>⚙️ <span data-i18n="c2t">Como o Cowork consome créditos?</span></h3>
+          <p data-i18n="c2b">O preço de cada tarefa vem de 4 fatores: Modelos, Runtime, Contexto e Ferramentas.</p>
+        </div>
+        <div class="concept">
+          <h3>🪶 <span data-i18n="c3t">Leve, médio e pesado</span></h3>
+          <p data-i18n="c3b">Tarefas leves geram 1 saída simples; médias, 2+; pesadas, muitas.</p>
+        </div>
+        <div class="concept">
+          <h3>📌 <span data-i18n="c5t">Pré-requisito</span></h3>
+          <p data-i18n="c5b">O Cowork exige a licença Microsoft 365 Copilot.</p>
+        </div>
+        <div class="concept full">
+          <h3>🏷️ <span data-i18n="c4t">Pago por uso (PayGo) × Pré-compra anual (P3)</span></h3>
+          <p data-i18n="c4b">PayGo: paga só o que usar. P3: pacote anual com desconto por volume.</p>
+          <table class="mini p3" id="p3table"></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOOLBAR ============ -->
+  <div class="toolbar">
+    <div class="grp" role="group" aria-label="Cenário">
+      <button class="chip" data-preset="0.6" data-i18n="presetLow">Conservador</button>
+      <button class="chip" data-preset="1" data-i18n="presetMid">Moderado</button>
+      <button class="chip" data-preset="1.5" data-i18n="presetHigh">Intensivo</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="btn-reset"><span>↺</span><span data-i18n="reset">Restaurar padrões</span></button>
+    <button class="btn" id="btn-print"><span>🖨️</span><span data-i18n="print">Imprimir / PDF</span></button>
+  </div>
+
+  <!-- ============ PASSO 1 — QUEM VAI USAR ============ -->
+  <section class="card">
+    <div class="step"><span class="n">1</span><h2 data-i18n="step1">Quem vai usar o Cowork e com que intensidade?</h2></div>
+    <div class="desc" data-i18n="step1desc">Os campos começam zerados — preencha com os seus números ou use os botões de cenário.</div>
+    <div class="tablewrap">
+      <table class="ptable" id="ptable">
+        <thead>
+          <tr>
+            <th data-i18n="thPersona">Perfil de usuário</th>
+            <th data-i18n="thUsers">Usuários</th>
+            <th><span class="tag" style="background:var(--light)"></span><span data-i18n="thLight">Leves</span></th>
+            <th><span class="tag" style="background:var(--medium)"></span><span data-i18n="thMedium">Médios</span></th>
+            <th><span class="tag" style="background:var(--heavy)"></span><span data-i18n="thHeavy">Pesados</span></th>
+            <th data-i18n="thPerUser">Créditos/usuário</th>
+            <th data-i18n="thSubtotal">Créditos/mês</th>
+          </tr>
+        </thead>
+        <tbody id="ptbody"></tbody>
+        <tfoot>
+          <tr>
+            <td data-i18n="thTotal">Total</td>
+            <td class="calc" id="f-users">0</td>
+            <td class="calc" id="f-light">0</td>
+            <td class="calc" id="f-medium">0</td>
+            <td class="calc" id="f-heavy">0</td>
+            <td></td>
+            <td class="calc" id="f-credits">0</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ PASSO 2 — PARA ONDE VAI O CONSUMO ============ -->
+  <section class="card">
+    <div class="step"><span class="n">2</span><h2 data-i18n="step2">Para onde vai o consumo</h2></div>
+    <div class="desc" data-i18n="step2desc">Veja quais perfis e quais tipos de tarefa mais consomem créditos.</div>
+    <div class="splitgrid" style="margin-top:14px">
+      <div>
+        <h3 style="font-size:.82rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin:0 0 6px" data-i18n="byPersona">Por perfil de usuário</h3>
+        <div class="bars" id="bars-persona"></div>
+      </div>
+      <div>
+        <h3 style="font-size:.82rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin:0 0 6px" data-i18n="byType">Por tipo de tarefa</h3>
+        <div class="bars" id="bars-type"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOTAIS ============ -->
+  <section class="card">
+    <div class="step"><span class="n">Σ</span><h2 data-i18n="resTitle">Totais estimados</h2></div>
+    <div class="desc" data-i18n="resDesc">O resultado do cenário acima.</div>
+    <div class="results">
+      <div class="rcard primary">
+        <div class="lbl" data-i18n="resCredits">Créditos por mês</div>
+        <div class="val" id="r-credits">0</div>
+        <div class="hint" id="r-credits-buffer"></div>
+      </div>
+      <div class="rcard">
+        <div class="lbl" data-i18n="resBudget">Orçamento mensal estimado</div>
+        <div class="val" id="r-budget">—</div>
+        <div class="hint" id="r-budget-buffer"></div>
+      </div>
+      <div class="rcard">
+        <div class="lbl" data-i18n="resPerUser">Custo médio por usuário/mês</div>
+        <div class="val" id="r-peruser">—</div>
+        <div class="hint" id="r-users-total"></div>
+      </div>
+    </div>
+    <div class="annualstrip">
+      <span class="k" data-i18n="annCredits">Créditos/ano</span> <span class="v" id="a-credits">0</span>
+      <span class="k" data-i18n="annBudget">Orçamento/ano</span> <span class="v" id="a-budget">—</span>
+      <span class="badge" id="a-p3" data-i18n="p3None">PayGo — sem desconto por volume</span>
+    </div>
+  </section>
+
+  <!-- ============ AJUSTAR PREMISSAS (no fim, antes da assinatura) ============ -->
+  <section class="card adv" id="adv">
+    <div class="adv-head" id="adv-head">
+      <div class="step" style="margin:0"><span class="n">⚙</span><h2 data-i18n="step3">Ajustar premissas, moeda e cobrança (opcional)</h2></div>
+      <span class="chev">▶</span>
+    </div>
+    <div class="adv-body">
+      <div class="infobox" data-i18n="step3desc">Esta seção é opcional e já vem com os valores oficiais.</div>
+
+      <div class="subh" data-i18n="advCreditsH">Quanto cada tipo de tarefa custa</div>
+      <p class="desc" style="margin:6px 0 0 0" data-i18n="advCreditsLead">Créditos médios por tarefa.</p>
+      <div class="creditsrow">
+        <div class="cbox">
+          <div class="ct"><span class="tag" style="background:var(--light)"></span><span data-i18n="cLight">Créditos por tarefa leve</span></div>
+          <div class="cd" data-i18n="cLightD">Padrão oficial: 125 créditos.</div>
+          <input type="number" min="0" id="c-light" value="125">
+        </div>
+        <div class="cbox">
+          <div class="ct"><span class="tag" style="background:var(--medium)"></span><span data-i18n="cMedium">Créditos por tarefa média</span></div>
+          <div class="cd" data-i18n="cMediumD">Padrão oficial: 500 créditos.</div>
+          <input type="number" min="0" id="c-medium" value="500">
+        </div>
+        <div class="cbox">
+          <div class="ct"><span class="tag" style="background:var(--heavy)"></span><span data-i18n="cHeavy">Créditos por tarefa pesada</span></div>
+          <div class="cd" data-i18n="cHeavyD">Padrão oficial: 1.200 créditos.</div>
+          <input type="number" min="0" id="c-heavy" value="1200">
+        </div>
+      </div>
+
+      <div class="subh" data-i18n="advParamsH">Preço, moeda, cobrança e margem</div>
+      <div class="grid" style="margin-top:10px">
+        <div class="field">
+          <label data-i18n="fPrice">Preço por crédito (US$)</label>
+          <input type="number" min="0" step="0.001" id="f-price" value="0.01">
+          <div class="help" data-i18n="fPriceH">Quanto custa 1 crédito em dólar.</div>
+        </div>
+        <div class="field">
+          <label data-i18n="fCurrency">Moeda de exibição</label>
+          <select id="f-currency">
+            <option value="USD">US$ — Dólar</option>
+            <option value="BRL">R$ — Real</option>
+            <option value="EUR">€ — Euro</option>
+          </select>
+          <div class="help" data-i18n="fCurrencyH">Em qual moeda ver o orçamento.</div>
+        </div>
+        <div class="field">
+          <label data-i18n="fFx">Cotação (US$ → moeda)</label>
+          <input type="number" min="0" step="0.0001" id="f-fx" value="1">
+          <div class="help" data-i18n="fFxH">Quanto vale 1 dólar na moeda escolhida.</div>
+        </div>
+        <div class="field">
+          <label data-i18n="fBilling">Modelo de cobrança</label>
+          <select id="f-billing">
+            <option value="paygo" data-i18n="optPaygo">PayGo (pago por uso)</option>
+            <option value="p3" data-i18n="optP3">P3 (pré-compra anual com desconto)</option>
+          </select>
+          <div class="help" data-i18n="fBillingH">Como você vai pagar.</div>
+        </div>
+        <div class="field">
+          <label data-i18n="fBuffer">Margem de segurança (%)</label>
+          <input type="number" min="0" max="100" id="f-buffer" value="15">
+          <div class="help" data-i18n="fBufferH">Reserva extra para imprevistos.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="sig">
+      <div class="av">DSA</div>
+      <div>
+        <div class="sg" data-i18n="sigName">Desenvolvido por Douglas Sousa Araujo — AlfaPeople Brasil</div>
+        <div class="sgs"><span data-i18n="sigSub">Criado com o Copilot Cowork</span> · <span data-i18n="sigUpdated">Última atualização</span>: <span id="last-update"></span></div>
+      </div>
+    </div>
+    <h4 data-i18n="srcTitle">Fontes consultadas</h4>
+    <p class="srclead" data-i18n="srcLead">Construída principalmente com base no Microsoft Copilot Credits Guide.</p>
+    <ul class="src" id="srclist"></ul>
+    <h4 data-i18n="discTitle">Avisos importantes</h4>
+    <p class="disc" data-i18n="disc1">Estimativa para planejamento, não cotação.</p>
+    <p class="disc" data-i18n="disc2">O consumo real varia. Valores em dólar.</p>
+    <p class="pub" data-i18n="pubNote">Calculadora independente e autocontida. Pode ser publicada e compartilhada livremente.</p>
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+
+var I18N = {
+  pt:{
+    title:"Calculadora de Créditos do Copilot Cowork",
+    subtitle:"Estime, em poucos cliques, quantos créditos do Copilot e quanto de orçamento a sua organização gastaria com o Cowork — sem precisar entender de tecnologia.",
+    pill1:"1 crédito = US$ 0,01 (pago por uso)", pill2:"Estimativas com base no modelo Anthropic Opus 4.8", pill3:"Funciona offline · não coleta nenhum dado",
+    concTitle:"Entenda os conceitos — comece por aqui",
+    concLead:"Se o assunto é novo para você, leia esta seção antes de calcular. Ela explica, em linguagem simples, o que são os créditos, como o Cowork os consome e como esta calculadora chega ao valor.",
+    hiw1t:"Defina os usuários", hiw1d:"Agrupe as pessoas por perfil e diga quantas vão usar o Cowork.",
+    hiw2t:"Estime a intensidade", hiw2d:"Quantas tarefas leves, médias e pesadas cada perfil faz por mês.",
+    hiw3t:"Veja o resultado", hiw3d:"Os créditos e o custo aparecem na hora. Ajuste e compare cenários.",
+    ttTitle:"Tipos de tarefa, modelo típico e créditos", ttType:"Tipo de tarefa", ttModel:"Modelo típico", ttCredits:"Créditos/tarefa",
+    ttModelLight:"Modelo leve e econômico (ex.: Sonnet 4.6)", ttModelMed:"Modelo capaz (Sonnet 4.6 / Opus 4.8)", ttModelHeavy:"Modelo de alta qualidade (Opus 4.8)",
+    ttFoot:"Mapeamento ilustrativo. No lançamento, o Cowork roda em modelos Anthropic (Opus 4.8 e Sonnet 4.6); no programa Frontier também há o GPT 5.5, e o Cowork 1 chega em breve. <b>Qualquer modelo consome créditos — nenhum é gratuito</b>; a escolha real se ajusta à complexidade de cada tarefa.",
+    exTitle:"Exemplos reais de tarefa",
+    exLightT:"Tarefa leve", exLightR:"70–200 créditos", exLightB:"Ex.: “Crie minha atualização semanal de status para a equipe com minhas prioridades e as reuniões executivas da agenda. Salve como rascunho.”",
+    exMedT:"Tarefa média", exMedR:"400–600 créditos", exMedB:"Ex.: “Prepare minha reunião com o cliente: reúna e-mails, agenda, dados do CRM e contexto de arquivos em um documento de briefing.”",
+    exHeavyT:"Tarefa pesada", exHeavyR:"acima de 1.500 créditos", exHeavyB:"Ex.: “Analise 6 meses de dados de uso do produto, identifique padrões e produza uma análise pronta para a liderança.”",
+    c1t:"O que é um Copilot Credit?", c1b:"É a “moeda” única que a Microsoft usa para cobrar o uso de IA sob demanda (Cowork, Copilot Studio, agentes do Dynamics 365 e Work IQ). Cada crédito custa US$ 0,01 no modelo pago por uso. Os créditos são compartilhados por toda a organização, e o consumo de cada tarefa depende da sua complexidade.",
+    c2t:"Como o Cowork consome créditos?", c2b:"O preço de cada tarefa vem da combinação de 4 fatores: <b>Modelos</b> (qual IA é usada), <b>Runtime</b> (tempo de execução na nuvem), <b>Contexto</b> (e-mails, arquivos e reuniões consultados) e <b>Ferramentas</b> (ações como enviar e-mail ou criar documento). Quanto mais complexa a tarefa, mais créditos ela usa.",
+    c3t:"Leve, médio e pesado", c3b:"Tarefas <b>leves</b> usam pouco contexto e geram 1 saída simples. As <b>médias</b> juntam várias fontes e produzem 2+ resultados. As <b>pesadas</b> agregam muita informação, raciocinam a fundo e geram muitas saídas — por isso custam bem mais.",
+    c5t:"Pré-requisito", c5b:"O Cowork exige a licença <b>Microsoft 365 Copilot</b>. Nenhum crédito de Cowork está incluído nessa licença — o uso é cobrado à parte, conforme o trabalho realizado.",
+    c4t:"Pago por uso (PayGo) × Pré-compra anual (P3)", c4b:"No <b>PayGo</b> você paga só o que usar (US$ 0,01 por crédito), sem compromisso. No <b>P3</b> você compra antecipadamente um pacote anual de créditos e ganha desconto por volume — de 5% a 20%. Créditos não usados expiram ao fim do ano. Abaixo, as faixas oficiais (a calculadora aplica a faixa certa automaticamente quando você escolhe P3):",
+    p3Tier:"Faixa", p3Credits:"Créditos/ano", p3Disc:"Desconto",
+    presetLow:"Conservador", presetMid:"Moderado", presetHigh:"Intensivo",
+    reset:"Restaurar padrões", print:"Imprimir / PDF",
+    step1:"Quem vai usar o Cowork e com que intensidade?",
+    step1desc:"Cada linha é um perfil de pessoa. Informe quantos usuários há em cada perfil e quantas tarefas leves, médias e pesadas cada um faz por mês. Os campos começam zerados — preencha com os seus números ou use os botões de cenário (Conservador, Moderado, Intensivo) para carregar intensidades de referência da Microsoft e ajustar a partir daí.",
+    thPersona:"Perfil de usuário", thUsers:"Usuários", thLight:"Leves", thMedium:"Médios", thHeavy:"Pesados",
+    thPerUser:"Créditos/usuário", thSubtotal:"Créditos/mês", thTotal:"Total",
+    step2:"Para onde vai o consumo", step2desc:"Veja quais perfis e quais tipos de tarefa mais consomem créditos. Isso ajuda a entender onde está o custo antes de contratar.",
+    byPersona:"Por perfil de usuário", byType:"Por tipo de tarefa",
+    resTitle:"Totais estimados", resDesc:"O resultado do cenário acima. Use a margem de segurança e o modelo de cobrança nos ajustes (no fim da página) para refinar.",
+    resCredits:"Créditos por mês", resBudget:"Orçamento mensal estimado", resPerUser:"Custo médio por usuário/mês",
+    annCredits:"Créditos/ano", annBudget:"Orçamento/ano", p3None:"PayGo — sem desconto por volume",
+    bufferLine:"Com margem de {p}%: {v}", usersTotal:"{n} usuários no total", p3Applied:"P3 · Faixa {t} · −{d}% aplicado",
+    step3:"Ajustar premissas, moeda e cobrança (opcional)",
+    step3desc:"Esta seção é <b>opcional</b> e já vem preenchida com os valores oficiais da Microsoft. Serve para deixar a estimativa mais perto da sua realidade: aqui você ajusta quanto cada tipo de tarefa custa em créditos, troca a moeda, escolhe como vai pagar (PayGo ou P3) e define uma margem de segurança. Toda mudança recalcula os totais na hora.",
+    advCreditsH:"Quanto cada tipo de tarefa custa",
+    advCreditsLead:"Estes são os créditos médios que uma tarefa consome. Aumente se o seu uso for mais complexo; diminua se for mais simples.",
+    advParamsH:"Preço, moeda, cobrança e margem",
+    cLight:"Créditos por tarefa leve", cMedium:"Créditos por tarefa média", cHeavy:"Créditos por tarefa pesada",
+    cLightD:"Quanto uma tarefa simples costuma consumir. Padrão oficial: 125 créditos.",
+    cMediumD:"Quanto uma tarefa intermediária costuma consumir. Padrão oficial: 500 créditos.",
+    cHeavyD:"Quanto uma tarefa complexa costuma consumir. Padrão oficial: 1.200 créditos.",
+    fPrice:"Preço por crédito (US$)", fPriceH:"Quanto custa 1 crédito em dólar. No modelo pago por uso (PayGo) é US$ 0,01. Só altere se a Microsoft mudar o preço.",
+    fCurrency:"Moeda de exibição", fCurrencyH:"Em qual moeda você quer ver o orçamento. O cálculo é feito em dólar e convertido pela cotação ao lado.",
+    fFx:"Cotação (US$ → moeda)", fFxH:"Quanto vale 1 dólar na moeda escolhida. Ex.: se US$ 1 = R$ 5,40, digite 5,40. Para dólar, deixe 1.",
+    fBilling:"Modelo de cobrança", optPaygo:"PayGo (pago por uso)", optP3:"P3 (pré-compra anual com desconto)", fBillingH:"Como você vai pagar. PayGo = paga só o que usar. P3 = compra um pacote anual e ganha desconto por volume, aplicado automaticamente conforme o total de créditos do ano.",
+    fBuffer:"Margem de segurança (%)", fBufferH:"Uma reserva extra sobre o valor estimado, para imprevistos e variações de uso. A Microsoft recomenda 10–20%. Aparece como “Com margem de X%” nos totais.",
+    sigName:"Desenvolvido por Douglas Sousa Araujo — AlfaPeople Brasil", sigSub:"Criado com o Copilot Cowork", sigUpdated:"Última atualização",
+    srcTitle:"Fontes consultadas",
+    srcLead:"Esta calculadora foi construída com base, principalmente, no <b>Microsoft Copilot Credits Guide (junho de 2026)</b> — a principal referência de consumo — complementado pelas fontes abaixo.",
+    discTitle:"Avisos importantes",
+    disc1:"Esta é uma estimativa para planejamento orçamentário, não uma cotação. Os números padrão derivam de dados agregados e anonimizados de clientes do programa Cowork Frontier e podem não refletir o resultado da sua organização.",
+    disc2:"O consumo real depende do uso, do modelo escolhido, do contexto recuperado, das chamadas de ferramenta e do tempo de execução. Todos os valores em dólar. Acompanhe o consumo real no centro de administração do Microsoft 365.",
+    pubNote:"Calculadora independente e autocontida, sem coleta de dados e sem vínculo com sistemas corporativos. Pode ser publicada e compartilhada livremente.",
+    sources:[
+      "Microsoft Copilot Credits Guide — Microsoft, junho de 2026 (base principal).",
+      "Customer Cowork Estimator — planilha de referência da Microsoft.",
+      "Microsoft Learn — Usage-Based Billing and Cost Management for Copilot Credits.",
+      "Microsoft Learn — Agent usage estimator (Microsoft Copilot Studio).",
+      "Blog Microsoft 365 — “Copilot Cowork is now generally available” (16/06/2026).",
+      "Referências de experiência: Copilot Cowork Estimator, Copilot Studio Estimator e Copilot Calculator."
+    ],
+    personas:["Trabalhadores do conhecimento corporativo","Trabalhadores voltados ao cliente","Trabalhadores técnicos","Gerentes e líderes seniores"],
+    personasSub:["Áreas de negócio, operações, finanças","Vendas, suporte, atendimento","Engenharia, TI, dados","Liderança e gestão"],
+    typeLight:"Leves", typeMedium:"Médios", typeHeavy:"Pesados"
+  },
+  en:{
+    title:"Copilot Cowork Credit Calculator",
+    subtitle:"Estimate in a few clicks how many Copilot credits — and how much budget — your organization would spend on Cowork, with no technical background required.",
+    pill1:"1 credit = US$0.01 (pay-as-you-go)", pill2:"Estimates based on the Anthropic Opus 4.8 model", pill3:"Works offline · collects no data",
+    concTitle:"Understand the concepts — start here",
+    concLead:"If this topic is new to you, read this section before calculating. It explains, in plain language, what credits are, how Cowork consumes them and how this calculator reaches its number.",
+    hiw1t:"Define the users", hiw1d:"Group people by persona and say how many will use Cowork.",
+    hiw2t:"Estimate intensity", hiw2d:"How many light, medium and heavy tasks each persona runs per month.",
+    hiw3t:"See the result", hiw3d:"Credits and cost appear instantly. Adjust and compare scenarios.",
+    ttTitle:"Task types, typical model and credits", ttType:"Task type", ttModel:"Typical model", ttCredits:"Credits/task",
+    ttModelLight:"Light, economical model (e.g. Sonnet 4.6)", ttModelMed:"Capable model (Sonnet 4.6 / Opus 4.8)", ttModelHeavy:"High-quality model (Opus 4.8)",
+    ttFoot:"Illustrative mapping. At launch, Cowork runs on Anthropic models (Opus 4.8 and Sonnet 4.6); GPT 5.5 is also available in the Frontier program, with Cowork 1 coming soon. <b>Every model consumes credits — none is free</b>; the actual choice adjusts to each task's complexity.",
+    exTitle:"Real task examples",
+    exLightT:"Light task", exLightR:"70–200 credits", exLightB:"E.g.: “Create my weekly status update for the team with my priorities and key executive meetings from my calendar. Save it as a draft.”",
+    exMedT:"Medium task", exMedR:"400–600 credits", exMedB:"E.g.: “Prepare for my customer meeting: pull together emails, calendar, CRM data and file context into a briefing document.”",
+    exHeavyT:"Heavy task", exHeavyR:"over 1,500 credits", exHeavyB:"E.g.: “Analyze 6 months of product usage data, find patterns and produce a leadership-ready analysis.”",
+    c1t:"What is a Copilot Credit?", c1b:"It is the single “currency” Microsoft uses to bill on-demand AI usage (Cowork, Copilot Studio, Dynamics 365 agents and Work IQ). Each credit costs US$0.01 in the pay-as-you-go model. Credits are shared across the whole organization, and each task's consumption depends on its complexity.",
+    c2t:"How does Cowork consume credits?", c2b:"Each task's price comes from 4 factors combined: <b>Models</b> (which AI is used), <b>Runtime</b> (cloud execution time), <b>Context</b> (emails, files and meetings retrieved) and <b>Tools</b> (actions like sending an email or creating a document). The more complex the task, the more credits it uses.",
+    c3t:"Light, medium and heavy", c3b:"<b>Light</b> tasks use little context and produce 1 simple output. <b>Medium</b> tasks combine several sources and produce 2+ results. <b>Heavy</b> tasks aggregate a lot of information, reason deeply and generate many outputs — so they cost far more.",
+    c5t:"Prerequisite", c5b:"Cowork requires the <b>Microsoft 365 Copilot</b> license. No Cowork credits are included in that license — usage is billed separately, in proportion to the work performed.",
+    c4t:"Pay-as-you-go (PayGo) × Annual pre-purchase (P3)", c4b:"With <b>PayGo</b> you pay only for what you use (US$0.01 per credit), no commitment. With <b>P3</b> you buy an annual pool of credits up front and get a volume discount — from 5% to 20%. Unused credits expire at the end of the year. Below are the official tiers (the calculator applies the right tier automatically when you choose P3):",
+    p3Tier:"Tier", p3Credits:"Credits/year", p3Disc:"Discount",
+    presetLow:"Conservative", presetMid:"Moderate", presetHigh:"Intensive",
+    reset:"Restore defaults", print:"Print / PDF",
+    step1:"Who will use Cowork, and how intensively?",
+    step1desc:"Each row is a person persona. Enter how many users are in each persona and how many light, medium and heavy tasks each one runs per month. Fields start at zero — fill in your own numbers, or use the scenario buttons (Conservative, Moderate, Intensive) to load Microsoft reference intensities and adjust from there.",
+    thPersona:"User persona", thUsers:"Users", thLight:"Light", thMedium:"Medium", thHeavy:"Heavy",
+    thPerUser:"Credits/user", thSubtotal:"Credits/month", thTotal:"Total",
+    step2:"Where the consumption goes", step2desc:"See which personas and task types consume the most credits. This helps you understand where the cost sits before you buy.",
+    byPersona:"By user persona", byType:"By task type",
+    resTitle:"Estimated totals", resDesc:"The result of the scenario above. Use the safety buffer and billing model in the adjustments (at the bottom of the page) to refine it.",
+    resCredits:"Credits per month", resBudget:"Estimated monthly budget", resPerUser:"Avg. cost per user/month",
+    annCredits:"Credits/year", annBudget:"Budget/year", p3None:"PayGo — no volume discount",
+    bufferLine:"With {p}% buffer: {v}", usersTotal:"{n} users in total", p3Applied:"P3 · Tier {t} · −{d}% applied",
+    step3:"Adjust assumptions, currency and billing (optional)",
+    step3desc:"This section is <b>optional</b> and already pre-filled with Microsoft's official values. It lets you bring the estimate closer to your reality: adjust how many credits each task type costs, change the currency, choose how you'll pay (PayGo or P3) and set a safety buffer. Every change recalculates the totals instantly.",
+    advCreditsH:"How much each task type costs",
+    advCreditsLead:"These are the average credits a task consumes. Increase them if your usage is more complex; lower them if it is simpler.",
+    advParamsH:"Price, currency, billing and buffer",
+    cLight:"Credits per light task", cMedium:"Credits per medium task", cHeavy:"Credits per heavy task",
+    cLightD:"How much a simple task usually consumes. Official default: 125 credits.",
+    cMediumD:"How much an intermediate task usually consumes. Official default: 500 credits.",
+    cHeavyD:"How much a complex task usually consumes. Official default: 1,200 credits.",
+    fPrice:"Price per credit (US$)", fPriceH:"How much 1 credit costs in dollars. In the pay-as-you-go model (PayGo) it is US$0.01. Only change it if Microsoft changes the price.",
+    fCurrency:"Display currency", fCurrencyH:"Which currency you want to see the budget in. The math is done in dollars and converted using the rate next to it.",
+    fFx:"Exchange rate (US$ → currency)", fFxH:"How much 1 dollar is worth in the chosen currency. E.g.: if US$1 = R$5.40, enter 5.40. For dollars, leave 1.",
+    fBilling:"Billing model", optPaygo:"PayGo (pay-as-you-go)", optP3:"P3 (annual pre-purchase with discount)", fBillingH:"How you'll pay. PayGo = pay only for what you use. P3 = buy an annual pool and get a volume discount, applied automatically based on the year's total credits.",
+    fBuffer:"Safety buffer (%)", fBufferH:"An extra reserve on top of the estimate, for surprises and usage swings. Microsoft recommends 10–20%. It shows up as “With X% buffer” in the totals.",
+    sigName:"Built by Douglas Sousa Araujo — AlfaPeople Brazil", sigSub:"Created with Copilot Cowork", sigUpdated:"Last updated",
+    srcTitle:"Sources consulted",
+    srcLead:"This calculator was built primarily on the <b>Microsoft Copilot Credits Guide (June 2026)</b> — the main consumption reference — complemented by the sources below.",
+    discTitle:"Important notes",
+    disc1:"This is an estimate for budget planning, not a quote. Default figures derive from aggregated, anonymized Cowork Frontier customer data and may not reflect your organization's results.",
+    disc2:"Actual consumption depends on usage, model choice, retrieved context, tool calls and runtime. All values in US dollars. Track real consumption in the Microsoft 365 admin center.",
+    pubNote:"Independent, self-contained calculator with no data collection and no link to corporate systems. Free to publish and share.",
+    sources:[
+      "Microsoft Copilot Credits Guide — Microsoft, June 2026 (primary basis).",
+      "Customer Cowork Estimator — Microsoft reference spreadsheet.",
+      "Microsoft Learn — Usage-Based Billing and Cost Management for Copilot Credits.",
+      "Microsoft Learn — Agent usage estimator (Microsoft Copilot Studio).",
+      "Microsoft 365 Blog — “Copilot Cowork is now generally available” (2026-06-16).",
+      "UX references: Copilot Cowork Estimator, Copilot Studio Estimator and Copilot Calculator."
+    ],
+    personas:["Corporate Knowledge Workers","Customer-Facing Knowledge Workers","Technical Workers","Managers & Senior Leaders"],
+    personasSub:["Business, operations, finance","Sales, support, service","Engineering, IT, data","Leadership and management"],
+    typeLight:"Light", typeMedium:"Medium", typeHeavy:"Heavy"
+  },
+  es:{
+    title:"Calculadora de Créditos de Copilot Cowork",
+    subtitle:"Estime en pocos clics cuántos créditos de Copilot — y cuánto presupuesto — gastaría su organización con Cowork, sin necesidad de conocimientos técnicos.",
+    pill1:"1 crédito = US$0,01 (pago por uso)", pill2:"Estimaciones basadas en el modelo Anthropic Opus 4.8", pill3:"Funciona sin conexión · no recopila datos",
+    concTitle:"Entienda los conceptos — empiece aquí",
+    concLead:"Si el tema es nuevo para usted, lea esta sección antes de calcular. Explica, en lenguaje sencillo, qué son los créditos, cómo los consume Cowork y cómo esta calculadora llega al valor.",
+    hiw1t:"Defina los usuarios", hiw1d:"Agrupe a las personas por perfil e indique cuántas usarán Cowork.",
+    hiw2t:"Estime la intensidad", hiw2d:"Cuántas tareas ligeras, medias y pesadas hace cada perfil al mes.",
+    hiw3t:"Vea el resultado", hiw3d:"Los créditos y el costo aparecen al instante. Ajuste y compare escenarios.",
+    ttTitle:"Tipos de tarea, modelo típico y créditos", ttType:"Tipo de tarea", ttModel:"Modelo típico", ttCredits:"Créditos/tarea",
+    ttModelLight:"Modelo ligero y económico (ej.: Sonnet 4.6)", ttModelMed:"Modelo capaz (Sonnet 4.6 / Opus 4.8)", ttModelHeavy:"Modelo de alta calidad (Opus 4.8)",
+    ttFoot:"Mapeo ilustrativo. En el lanzamiento, Cowork funciona con modelos Anthropic (Opus 4.8 y Sonnet 4.6); en el programa Frontier también está GPT 5.5, y Cowork 1 llegará pronto. <b>Cualquier modelo consume créditos — ninguno es gratuito</b>; la elección real se ajusta a la complejidad de cada tarea.",
+    exTitle:"Ejemplos reales de tarea",
+    exLightT:"Tarea ligera", exLightR:"70–200 créditos", exLightB:"Ej.: “Crea mi actualización semanal de estado para el equipo con mis prioridades y las reuniones ejecutivas de la agenda. Guárdala como borrador.”",
+    exMedT:"Tarea media", exMedR:"400–600 créditos", exMedB:"Ej.: “Prepara mi reunión con el cliente: reúne correos, agenda, datos del CRM y contexto de archivos en un documento de briefing.”",
+    exHeavyT:"Tarea pesada", exHeavyR:"más de 1.500 créditos", exHeavyB:"Ej.: “Analiza 6 meses de datos de uso del producto, identifica patrones y produce un análisis listo para la dirección.”",
+    c1t:"¿Qué es un Copilot Credit?", c1b:"Es la “moneda” única que Microsoft usa para cobrar el uso de IA bajo demanda (Cowork, Copilot Studio, agentes de Dynamics 365 y Work IQ). Cada crédito cuesta US$0,01 en el modelo de pago por uso. Los créditos se comparten en toda la organización y el consumo de cada tarea depende de su complejidad.",
+    c2t:"¿Cómo consume créditos Cowork?", c2b:"El precio de cada tarea surge de 4 factores combinados: <b>Modelos</b> (qué IA se usa), <b>Runtime</b> (tiempo de ejecución en la nube), <b>Contexto</b> (correos, archivos y reuniones consultados) y <b>Herramientas</b> (acciones como enviar un correo o crear un documento). Cuanto más compleja la tarea, más créditos usa.",
+    c3t:"Ligera, media y pesada", c3b:"Las tareas <b>ligeras</b> usan poco contexto y generan 1 salida simple. Las <b>medias</b> combinan varias fuentes y producen 2+ resultados. Las <b>pesadas</b> agregan mucha información, razonan a fondo y generan muchas salidas — por eso cuestan bastante más.",
+    c5t:"Requisito previo", c5b:"Cowork requiere la licencia <b>Microsoft 365 Copilot</b>. Ningún crédito de Cowork está incluido en esa licencia — el uso se cobra aparte, en proporción al trabajo realizado.",
+    c4t:"Pago por uso (PayGo) × Precompra anual (P3)", c4b:"Con <b>PayGo</b> paga solo lo que usa (US$0,01 por crédito), sin compromiso. Con <b>P3</b> compra por adelantado un paquete anual de créditos y obtiene descuento por volumen — del 5% al 20%. Los créditos no usados caducan al final del año. Abajo, los tramos oficiales (la calculadora aplica el tramo correcto automáticamente al elegir P3):",
+    p3Tier:"Tramo", p3Credits:"Créditos/año", p3Disc:"Descuento",
+    presetLow:"Conservador", presetMid:"Moderado", presetHigh:"Intensivo",
+    reset:"Restaurar valores", print:"Imprimir / PDF",
+    step1:"¿Quién usará Cowork y con qué intensidad?",
+    step1desc:"Cada fila es un perfil de persona. Indique cuántos usuarios hay en cada perfil y cuántas tareas ligeras, medias y pesadas hace cada uno al mes. Los campos empiezan en cero — rellénelos con sus propios números o use los botones de escenario (Conservador, Moderado, Intensivo) para cargar intensidades de referencia de Microsoft y ajustar desde ahí.",
+    thPersona:"Perfil de usuario", thUsers:"Usuarios", thLight:"Ligeras", thMedium:"Medias", thHeavy:"Pesadas",
+    thPerUser:"Créditos/usuario", thSubtotal:"Créditos/mes", thTotal:"Total",
+    step2:"A dónde va el consumo", step2desc:"Vea qué perfiles y qué tipos de tarea consumen más créditos. Esto ayuda a entender dónde está el costo antes de contratar.",
+    byPersona:"Por perfil de usuario", byType:"Por tipo de tarea",
+    resTitle:"Totales estimados", resDesc:"El resultado del escenario anterior. Use el margen de seguridad y el modelo de facturación en los ajustes (al final de la página) para afinarlo.",
+    resCredits:"Créditos por mes", resBudget:"Presupuesto mensual estimado", resPerUser:"Costo medio por usuario/mes",
+    annCredits:"Créditos/año", annBudget:"Presupuesto/año", p3None:"PayGo — sin descuento por volumen",
+    bufferLine:"Con margen del {p}%: {v}", usersTotal:"{n} usuarios en total", p3Applied:"P3 · Tramo {t} · −{d}% aplicado",
+    step3:"Ajustar supuestos, moneda y facturación (opcional)",
+    step3desc:"Esta sección es <b>opcional</b> y ya viene rellena con los valores oficiales de Microsoft. Sirve para acercar la estimación a su realidad: aquí ajusta cuántos créditos cuesta cada tipo de tarea, cambia la moneda, elige cómo va a pagar (PayGo o P3) y define un margen de seguridad. Cada cambio recalcula los totales al instante.",
+    advCreditsH:"Cuánto cuesta cada tipo de tarea",
+    advCreditsLead:"Estos son los créditos medios que consume una tarea. Auméntelos si su uso es más complejo; redúzcalos si es más simple.",
+    advParamsH:"Precio, moneda, facturación y margen",
+    cLight:"Créditos por tarea ligera", cMedium:"Créditos por tarea media", cHeavy:"Créditos por tarea pesada",
+    cLightD:"Cuánto consume normalmente una tarea simple. Predeterminado oficial: 125 créditos.",
+    cMediumD:"Cuánto consume normalmente una tarea intermedia. Predeterminado oficial: 500 créditos.",
+    cHeavyD:"Cuánto consume normalmente una tarea compleja. Predeterminado oficial: 1.200 créditos.",
+    fPrice:"Precio por crédito (US$)", fPriceH:"Cuánto cuesta 1 crédito en dólares. En el modelo de pago por uso (PayGo) es US$0,01. Cámbielo solo si Microsoft cambia el precio.",
+    fCurrency:"Moneda de visualización", fCurrencyH:"En qué moneda quiere ver el presupuesto. El cálculo se hace en dólares y se convierte con la cotización de al lado.",
+    fFx:"Cotización (US$ → moneda)", fFxH:"Cuánto vale 1 dólar en la moneda elegida. Ej.: si US$1 = R$5,40, escriba 5,40. Para dólares, deje 1.",
+    fBilling:"Modelo de facturación", optPaygo:"PayGo (pago por uso)", optP3:"P3 (precompra anual con descuento)", fBillingH:"Cómo va a pagar. PayGo = paga solo lo que usa. P3 = compra un paquete anual y obtiene descuento por volumen, aplicado automáticamente según el total de créditos del año.",
+    fBuffer:"Margen de seguridad (%)", fBufferH:"Una reserva extra sobre el valor estimado, para imprevistos y variaciones de uso. Microsoft recomienda 10–20%. Aparece como “Con margen del X%” en los totales.",
+    sigName:"Desarrollado por Douglas Sousa Araujo — AlfaPeople Brasil", sigSub:"Creado con Copilot Cowork", sigUpdated:"Última actualización",
+    srcTitle:"Fuentes consultadas",
+    srcLead:"Esta calculadora se construyó principalmente sobre el <b>Microsoft Copilot Credits Guide (junio de 2026)</b> — la referencia principal de consumo — complementada con las fuentes de abajo.",
+    discTitle:"Avisos importantes",
+    disc1:"Esta es una estimación para planificación presupuestaria, no una cotización. Las cifras predeterminadas derivan de datos agregados y anonimizados de clientes del programa Cowork Frontier y pueden no reflejar los resultados de su organización.",
+    disc2:"El consumo real depende del uso, el modelo elegido, el contexto recuperado, las llamadas a herramientas y el tiempo de ejecución. Todos los valores en dólares. Monitoree el consumo real en el centro de administración de Microsoft 365.",
+    pubNote:"Calculadora independiente y autocontenida, sin recopilación de datos y sin vínculo con sistemas corporativos. Libre para publicar y compartir.",
+    sources:[
+      "Microsoft Copilot Credits Guide — Microsoft, junio de 2026 (base principal).",
+      "Customer Cowork Estimator — hoja de cálculo de referencia de Microsoft.",
+      "Microsoft Learn — Usage-Based Billing and Cost Management for Copilot Credits.",
+      "Microsoft Learn — Agent usage estimator (Microsoft Copilot Studio).",
+      "Blog de Microsoft 365 — “Copilot Cowork is now generally available” (16/06/2026).",
+      "Referencias de experiencia: Copilot Cowork Estimator, Copilot Studio Estimator y Copilot Calculator."
+    ],
+    personas:["Trabajadores del conocimiento corporativo","Trabajadores de cara al cliente","Trabajadores técnicos","Gerentes y líderes senior"],
+    personasSub:["Negocio, operaciones, finanzas","Ventas, soporte, atención","Ingeniería, TI, datos","Liderazgo y gestión"],
+    typeLight:"Ligeras", typeMedium:"Medias", typeHeavy:"Pesadas"
+  }
+};
+var LOCALE = {pt:"pt-BR", en:"en-US", es:"es-ES"};
+var LAST_UPDATE = "2026-06-18"; /* << atualize esta data sempre que editar a calculadora */
+
+var P3_TIERS = [
+  {c:300000,d:5},{c:1500000,d:6},{c:3000000,d:7},{c:15000000,d:8},
+  {c:30000000,d:10},{c:75000000,d:12},{c:150000000,d:14},{c:225000000,d:17},{c:300000000,d:20}
+];
+function p3For(annualCredits){
+  var d=0, tier=0;
+  for(var i=0;i<P3_TIERS.length;i++){ if(annualCredits>=P3_TIERS[i].c){ d=P3_TIERS[i].d; tier=i+1; } }
+  return {discount:d, tier:tier};
+}
+
+/* Reference prompt intensities per persona (Microsoft Customer Cowork Estimator). Loaded only via the scenario buttons. */
+var REF = [
+  {light:22, medium:11, heavy:5},
+  {light:17, medium:13, heavy:5},
+  {light:12, medium:9,  heavy:14},
+  {light:13, medium:6,  heavy:3}
+];
+function zeroRows(){ return REF.map(function(){ return {users:0,light:0,medium:0,heavy:0}; }); }
+
+var state = {
+  lang:"pt", rows:zeroRows(),
+  cLight:125, cMedium:500, cHeavy:1200,
+  price:0.01, currency:"USD", fx:1, buffer:15, billing:"paygo"
+};
+var COLORS = {persona:["#0f6cbd","#7c5cff","#2aa775","#e0931a"], light:"#2aa775", medium:"#e0931a", heavy:"#d6483b"};
+
+function t(k){ return I18N[state.lang][k]; }
+function nf(n){ return new Intl.NumberFormat(LOCALE[state.lang]).format(Math.round(n)); }
+function money(v){
+  try{ return new Intl.NumberFormat(LOCALE[state.lang],{style:"currency",currency:state.currency,maximumFractionDigits:2}).format(v); }
+  catch(e){ return state.currency+" "+v.toFixed(2); }
+}
+function fmt(str,obj){ return str.replace(/\{(\w+)\}/g,function(_,k){return obj[k];}); }
+function fmtDate(){
+  try{ return new Date(LAST_UPDATE+"T00:00:00").toLocaleDateString(LOCALE[state.lang]); }
+  catch(e){ return LAST_UPDATE; }
+}
+
+function buildRows(){
+  var tb = document.getElementById("ptbody"); tb.innerHTML = "";
+  state.rows.forEach(function(r,i){
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="persona"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;margin-inline-end:7px;background:'+COLORS.persona[i]+'"></span>'+t("personas")[i]+'<small>'+t("personasSub")[i]+'</small></td>'+
+      '<td><input class="users" type="number" min="0" data-i="'+i+'" data-f="users" value="'+r.users+'"></td>'+
+      '<td><input type="number" min="0" data-i="'+i+'" data-f="light" value="'+r.light+'"></td>'+
+      '<td><input type="number" min="0" data-i="'+i+'" data-f="medium" value="'+r.medium+'"></td>'+
+      '<td><input type="number" min="0" data-i="'+i+'" data-f="heavy" value="'+r.heavy+'"></td>'+
+      '<td class="calc" data-pu="'+i+'">0</td>'+
+      '<td class="calc" data-st="'+i+'">0</td>';
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll("input").forEach(function(inp){
+    inp.addEventListener("input",function(){
+      var i=+inp.getAttribute("data-i"), f=inp.getAttribute("data-f");
+      state.rows[i][f] = Math.max(0, +inp.value||0); compute();
+    });
+  });
+}
+
+function renderP3Table(){
+  var el=document.getElementById("p3table");
+  var h='<thead><tr><th>'+t("p3Tier")+'</th><th>'+t("p3Credits")+'</th><th>'+t("p3Disc")+'</th></tr></thead><tbody>';
+  P3_TIERS.forEach(function(r,i){ h+='<tr><td>'+(i+1)+'</td><td>'+nf(r.c)+'</td><td>'+r.d+'%</td></tr>'; });
+  el.innerHTML=h+'</tbody>';
+}
+function renderTaskTable(){
+  var el=document.getElementById("tttable");
+  var rows=[
+    {c:COLORS.light, type:t("typeLight"), model:t("ttModelLight"), cr:t("exLightR")},
+    {c:COLORS.medium, type:t("typeMedium"), model:t("ttModelMed"), cr:t("exMedR")},
+    {c:COLORS.heavy, type:t("typeHeavy"), model:t("ttModelHeavy"), cr:t("exHeavyR")}
+  ];
+  var h='<thead><tr><th>'+t("ttType")+'</th><th>'+t("ttModel")+'</th><th>'+t("ttCredits")+'</th></tr></thead><tbody>';
+  rows.forEach(function(r){ h+='<tr><td><span class="dotc" style="background:'+r.c+'"></span>'+r.type+'</td><td>'+r.model+'</td><td>'+r.cr+'</td></tr>'; });
+  el.innerHTML=h+'</tbody>';
+}
+
+function compute(){
+  var CL=state.cLight, CM=state.cMedium, CH=state.cHeavy;
+  var totUsers=0, totLight=0, totMedium=0, totHeavy=0, totCredits=0, perPersona=[];
+  state.rows.forEach(function(r,i){
+    var perUser = r.light*CL + r.medium*CM + r.heavy*CH;
+    var sub = r.users*perUser; perPersona.push(sub);
+    totUsers+=r.users; totLight+=r.users*r.light; totMedium+=r.users*r.medium; totHeavy+=r.users*r.heavy; totCredits+=sub;
+    var pu=document.querySelector('[data-pu="'+i+'"]'); if(pu) pu.textContent=nf(perUser);
+    var st=document.querySelector('[data-st="'+i+'"]'); if(st) st.textContent=nf(sub);
+  });
+  var lightC=totLight*CL, mediumC=totMedium*CM, heavyC=totHeavy*CH;
+
+  document.getElementById("f-users").textContent=nf(totUsers);
+  document.getElementById("f-light").textContent=nf(totLight);
+  document.getElementById("f-medium").textContent=nf(totMedium);
+  document.getElementById("f-heavy").textContent=nf(totHeavy);
+  document.getElementById("f-credits").textContent=nf(totCredits);
+
+  var annualCredits = totCredits*12;
+  var p3 = p3For(annualCredits);
+  var discount = (state.billing==="p3") ? p3.discount : 0;
+  var usdMonthly = totCredits*state.price*(1-discount/100);
+  var budgetMonthly = usdMonthly*state.fx;
+  var budgetAnnual = budgetMonthly*12;
+  var perUserCost = totUsers>0 ? budgetMonthly/totUsers : 0;
+  var bufFactor = 1+state.buffer/100;
+
+  document.getElementById("r-credits").textContent=nf(totCredits);
+  document.getElementById("r-credits-buffer").textContent = (totCredits>0 && state.buffer>0) ? fmt(t("bufferLine"),{p:state.buffer,v:nf(totCredits*bufFactor)}) : "";
+  document.getElementById("r-budget").textContent = totCredits>0 ? money(budgetMonthly) : "—";
+  document.getElementById("r-budget-buffer").textContent = (totCredits>0 && state.buffer>0) ? fmt(t("bufferLine"),{p:state.buffer,v:money(budgetMonthly*bufFactor)}) : "";
+  document.getElementById("r-peruser").textContent = totUsers>0 ? money(perUserCost) : "—";
+  document.getElementById("r-users-total").textContent = totUsers>0 ? fmt(t("usersTotal"),{n:nf(totUsers)}) : "";
+
+  document.getElementById("a-credits").textContent=nf(annualCredits);
+  document.getElementById("a-budget").textContent = totCredits>0 ? money(budgetAnnual) : "—";
+  var badge=document.getElementById("a-p3");
+  if(state.billing==="p3" && discount>0){ badge.textContent=fmt(t("p3Applied"),{t:p3.tier,d:discount}); badge.classList.add("on"); }
+  else { badge.textContent=t("p3None"); badge.classList.remove("on"); }
+
+  drawBars("bars-persona", state.rows.map(function(r,i){return {label:t("personas")[i], value:perPersona[i], color:COLORS.persona[i]};}), totCredits);
+  drawBars("bars-type", [
+    {label:t("typeLight"), value:lightC, color:COLORS.light},
+    {label:t("typeMedium"), value:mediumC, color:COLORS.medium},
+    {label:t("typeHeavy"), value:heavyC, color:COLORS.heavy}
+  ], totCredits);
+}
+
+function drawBars(elId, items, total){
+  var el=document.getElementById(elId); el.innerHTML="";
+  var max = total>0 ? total : 1;
+  items.forEach(function(it){
+    var pct = max>0 ? (it.value/max*100) : 0;
+    var share = total>0 ? Math.round(it.value/total*100) : 0;
+    var row=document.createElement("div"); row.className="barrow";
+    var label = it.label.length>26 ? it.label.slice(0,24)+"…" : it.label;
+    row.innerHTML='<div class="bl" title="'+it.label+'">'+label+'</div>'+
+      '<div class="bartrack"><div class="barfill" style="width:'+pct+'%;background:'+it.color+'"></div></div>'+
+      '<div class="bv">'+nf(it.value)+' · '+share+'%</div>';
+    el.appendChild(row);
+  });
+}
+
+function renderSources(){
+  var ul=document.getElementById("srclist"); ul.innerHTML="";
+  t("sources").forEach(function(s){ var li=document.createElement("li"); li.textContent=s; ul.appendChild(li); });
+}
+
+function applyLang(){
+  document.documentElement.lang = LOCALE[state.lang];
+  document.querySelectorAll("[data-i18n]").forEach(function(el){
+    var v=I18N[state.lang][el.getAttribute("data-i18n")];
+    if(v!=null) el.innerHTML=v;
+  });
+  var lu=document.getElementById("last-update"); if(lu) lu.textContent=fmtDate();
+  buildRows(); renderP3Table(); renderTaskTable(); renderSources(); compute();
+}
+
+function applyPreset(factor){
+  state.rows = REF.map(function(r,i){
+    return {users: state.rows[i].users, light:Math.round(r.light*factor), medium:Math.round(r.medium*factor), heavy:Math.round(r.heavy*factor)};
+  });
+  buildRows(); compute();
+}
+
+/* theme toggle */
+function currentTheme(){
+  var a=document.documentElement.getAttribute("data-theme");
+  if(a) return a;
+  return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+}
+function applyTheme(th){
+  if(th==="light"||th==="dark"){ document.documentElement.setAttribute("data-theme",th); }
+  else { document.documentElement.removeAttribute("data-theme"); }
+  document.getElementById("theme-btn").textContent = (currentTheme()==="dark") ? "☀️" : "🌙";
+}
+
+document.querySelectorAll(".langs button").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.querySelectorAll(".langs button").forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active"); state.lang=b.getAttribute("data-lang"); applyLang();
+  });
+});
+document.querySelectorAll("[data-preset]").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.querySelectorAll("[data-preset]").forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active"); applyPreset(parseFloat(b.getAttribute("data-preset")));
+  });
+});
+function bindNum(id,key,isFloat){
+  document.getElementById(id).addEventListener("input",function(e){
+    var v = isFloat ? parseFloat(e.target.value) : parseInt(e.target.value,10);
+    if(isNaN(v)) v=0; state[key]=Math.max(0,v); compute();
+  });
+}
+bindNum("c-light","cLight",false); bindNum("c-medium","cMedium",false); bindNum("c-heavy","cHeavy",false);
+bindNum("f-price","price",true); bindNum("f-fx","fx",true); bindNum("f-buffer","buffer",true);
+document.getElementById("f-currency").addEventListener("change",function(e){
+  state.currency=e.target.value;
+  if(state.currency==="USD"){ state.fx=1; document.getElementById("f-fx").value=1; }
+  compute();
+});
+document.getElementById("f-billing").addEventListener("change",function(e){ state.billing=e.target.value; compute(); });
+document.getElementById("adv-head").addEventListener("click",function(){ document.getElementById("adv").classList.toggle("open"); });
+document.getElementById("concepts-head").addEventListener("click",function(){ document.getElementById("concepts-card").classList.toggle("open"); });
+document.getElementById("btn-reset").addEventListener("click",function(){
+  state.rows=zeroRows(); state.cLight=125; state.cMedium=500; state.cHeavy=1200;
+  state.price=0.01; state.currency="USD"; state.fx=1; state.buffer=15; state.billing="paygo";
+  document.getElementById("c-light").value=125; document.getElementById("c-medium").value=500; document.getElementById("c-heavy").value=1200;
+  document.getElementById("f-price").value=0.01; document.getElementById("f-currency").value="USD";
+  document.getElementById("f-fx").value=1; document.getElementById("f-buffer").value=15; document.getElementById("f-billing").value="paygo";
+  document.querySelectorAll("[data-preset]").forEach(function(x){x.classList.remove("active");});
+  buildRows(); compute();
+});
+document.getElementById("btn-print").addEventListener("click",function(){ window.print(); });
+document.getElementById("theme-btn").addEventListener("click",function(){
+  var next = currentTheme()==="dark" ? "light" : "dark";
+  try{ localStorage.setItem("cowork-calc-theme", next); }catch(e){}
+  applyTheme(next);
+});
+
+/* init */
+try{ var saved=localStorage.getItem("cowork-calc-theme"); applyTheme(saved||"auto"); }catch(e){ applyTheme("auto"); }
+applyLang();
+</script>
+</body>
+</html>
