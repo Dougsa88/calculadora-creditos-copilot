@@ -38,12 +38,14 @@
     line-height:1.5; -webkit-font-smoothing:antialiased;
   }
   .wrap{max-width:1080px; margin-inline:auto; padding:24px 18px 56px}
-  header.top{display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; justify-content:space-between; margin-bottom:8px}
-  .brandline{display:flex; align-items:center; gap:12px}
-  .logo{width:42px; height:42px; border-radius:11px; background:linear-gradient(135deg,var(--brand),var(--accent)); display:flex; align-items:center; justify-content:center; flex:none; box-shadow:var(--shadow)}
-  .logo svg{width:24px; height:24px}
-  h1{font-size:1.5rem; margin:0; letter-spacing:-.01em}
-  .sub{color:var(--muted); font-size:.92rem; margin-top:2px; max-width:64ch}
+  header.top{margin-bottom:10px}
+  .topbar{display:flex; justify-content:flex-end; align-items:center; gap:8px}
+  .hero{display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; margin-top:8px}
+  .hero-title{display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap}
+  .hero-icons{display:inline-flex; gap:8px; align-items:center}
+  .hero-icons .brandicon{height:48px}
+  h1{font-size:1.95rem; margin:0; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:.95rem; margin:0 auto; max-width:64ch}
   .headctrls{display:flex; gap:8px; align-items:center}
   .themebtn{border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:1rem; line-height:1; width:38px; height:38px; border-radius:999px; cursor:pointer; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center}
   .themebtn:hover{border-color:var(--brand)}
@@ -54,8 +56,9 @@
   .brandrow{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
   .brand-chip{display:inline-flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--line); padding:5px 13px 5px 9px; border-radius:999px; font-size:.84rem; font-weight:700; color:var(--ink); box-shadow:var(--shadow)}
   .brand-chip svg{width:18px; height:18px; flex:none}
+  .brandicon{height:44px; width:auto; border-radius:11px; display:block; box-shadow:var(--shadow); border:1px solid var(--line)}
 
-  .pills{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  .pills{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; justify-content:center}
   .price-pill{display:inline-flex; align-items:center; gap:6px; background:var(--surface-2); border:1px solid var(--line); padding:5px 11px; border-radius:999px; font-size:.78rem; font-weight:600; color:var(--muted)}
 
   .hiw{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
@@ -172,7 +175,7 @@
     .splitgrid{grid-template-columns:1fr}
     .creditsrow{grid-template-columns:1fr}
     .barrow{grid-template-columns:110px 1fr auto}
-    h1{font-size:1.3rem}
+    h1{font-size:1.45rem}
   }
   @media print{
     body{background:#fff}
@@ -186,19 +189,7 @@
 <div class="wrap">
 
   <header class="top">
-    <div class="brandline">
-      <div class="logo" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L4 6v6c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6l-8-4z" fill="#fff" opacity=".25"/>
-          <path d="M9 12.5l2 2 4-4.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div>
-        <h1 data-i18n="title">Calculadora de Créditos do Copilot Cowork</h1>
-        <div class="sub" data-i18n="subtitle">Estime, em poucos cliques, quantos créditos do Copilot e quanto de orçamento a sua organização gastaria com o Cowork — sem precisar entender de tecnologia.</div>
-      </div>
-    </div>
-    <div class="headctrls">
+    <div class="topbar">
       <button class="themebtn" id="theme-btn" title="Tema claro / escuro" aria-label="Alternar tema claro ou escuro">🌙</button>
       <div class="langs" role="group" aria-label="Idioma">
         <button data-lang="pt" class="active">PT</button>
@@ -206,18 +197,18 @@
         <button data-lang="es">ES</button>
       </div>
     </div>
+    <div class="hero">
+      <div class="hero-title">
+        <span class="hero-icons">
+          <img class="brandicon" src="data:image/jpeg;base64,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" alt="Microsoft 365 Copilot">
+          <img class="brandicon" src="data:image/jpeg;base64,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" alt="Copilot Cowork">
+        </span>
+        <h1 data-i18n="title">Calculadora de Créditos do Copilot Cowork</h1>
+      </div>
+      <div class="sub" data-i18n="subtitle">Estime o consumo mensal de créditos do Copilot Cowork, a faixa de orçamento e o custo por usuário a partir do perfil da força de trabalho e das premissas de uso mensal — tarefas leves, médias e pesadas.</div>
+    </div>
   </header>
 
-  <div class="brandrow">
-    <span class="brand-chip">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="cpg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2aa0ff"/><stop offset=".5" stop-color="#7c5cff"/><stop offset="1" stop-color="#ff5fa2"/></linearGradient></defs><path d="M12 1.6c.7 5 4.4 8.7 9.4 9.4-5 .7-8.7 4.4-9.4 9.4-.7-5-4.4-8.7-9.4-9.4 5-.7 8.7-4.4 9.4-9.4z" fill="url(#cpg)"/></svg>
-      Copilot
-    </span>
-    <span class="brand-chip">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2.5" y="6" width="11" height="11" rx="3.2" fill="#0f6cbd"/><rect x="10.5" y="9" width="11" height="11" rx="3.2" fill="#7c5cff" opacity=".88"/></svg>
-      Cowork
-    </span>
-  </div>
 
   <div class="pills">
     <span class="price-pill"><span>💳</span><span data-i18n="pill1">1 crédito = US$ 0,01 (pago por uso)</span></span>
@@ -471,7 +462,7 @@
 var I18N = {
   pt:{
     title:"Calculadora de Créditos do Copilot Cowork",
-    subtitle:"Estime, em poucos cliques, quantos créditos do Copilot e quanto de orçamento a sua organização gastaria com o Cowork — sem precisar entender de tecnologia.",
+    subtitle:"Estime o consumo mensal de créditos do Copilot Cowork, a faixa de orçamento e o custo por usuário a partir do perfil da força de trabalho e das premissas de uso mensal — tarefas leves, médias e pesadas.",
     pill1:"1 crédito = US$ 0,01 (pago por uso)", pill2:"Estimativas com base no modelo Anthropic Opus 4.8", pill3:"Funciona offline · não coleta nenhum dado",
     concTitle:"Entenda os conceitos — comece por aqui",
     concLead:"Se o assunto é novo para você, leia esta seção antes de calcular. Ela explica, em linguagem simples, o que são os créditos, como o Cowork os consome e como esta calculadora chega ao valor.",
@@ -538,7 +529,7 @@ var I18N = {
   },
   en:{
     title:"Copilot Cowork Credit Calculator",
-    subtitle:"Estimate in a few clicks how many Copilot credits — and how much budget — your organization would spend on Cowork, with no technical background required.",
+    subtitle:"Estimate monthly Copilot Cowork credit consumption, budget range, and cost per user from workforce profile and light, medium, and heavy monthly prompting assumptions.",
     pill1:"1 credit = US$0.01 (pay-as-you-go)", pill2:"Estimates based on the Anthropic Opus 4.8 model", pill3:"Works offline · collects no data",
     concTitle:"Understand the concepts — start here",
     concLead:"If this topic is new to you, read this section before calculating. It explains, in plain language, what credits are, how Cowork consumes them and how this calculator reaches its number.",
@@ -605,7 +596,7 @@ var I18N = {
   },
   es:{
     title:"Calculadora de Créditos de Copilot Cowork",
-    subtitle:"Estime en pocos clics cuántos créditos de Copilot — y cuánto presupuesto — gastaría su organización con Cowork, sin necesidad de conocimientos técnicos.",
+    subtitle:"Estime el consumo mensual de créditos de Copilot Cowork, el rango de presupuesto y el costo por usuario a partir del perfil de la fuerza laboral y de los supuestos de uso mensual — tareas ligeras, medias y pesadas.",
     pill1:"1 crédito = US$0,01 (pago por uso)", pill2:"Estimaciones basadas en el modelo Anthropic Opus 4.8", pill3:"Funciona sin conexión · no recopila datos",
     concTitle:"Entienda los conceptos — empiece aquí",
     concLead:"Si el tema es nuevo para usted, lea esta sección antes de calcular. Explica, en lenguaje sencillo, qué son los créditos, cómo los consume Cowork y cómo esta calculadora llega al valor.",
@@ -672,7 +663,7 @@ var I18N = {
   }
 };
 var LOCALE = {pt:"pt-BR", en:"en-US", es:"es-ES"};
-var LAST_UPDATE = "2026-06-19"; /* << atualize esta data sempre que editar a calculadora */
+var LAST_UPDATE = "2026-06-18"; /* << atualize esta data sempre que editar a calculadora */
 
 var P3_TIERS = [
   {c:300000,d:5},{c:1500000,d:6},{c:3000000,d:7},{c:15000000,d:8},
