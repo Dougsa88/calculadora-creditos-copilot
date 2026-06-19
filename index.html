@@ -105,6 +105,9 @@
   td.persona small{display:block; font-weight:400; color:var(--muted); font-size:.76rem}
   tbody tr:hover{background:var(--surface-2)}
   td.calc{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap}
+  /* right-align result columns (Créditos/usuário, Créditos/mês) so numbers grow leftward */
+  table.ptable th:nth-child(6),table.ptable th:nth-child(7),
+  table.ptable td:nth-child(6),table.ptable td:nth-child(7){text-align:end}
   tfoot td{font-weight:700; border-top:2px solid var(--line); border-bottom:0; font-variant-numeric:tabular-nums}
   input[type=number]{width:74px; padding:7px 8px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); border-radius:8px; font:inherit; font-size:.88rem; text-align:end; -moz-appearance:textfield}
   input[type=number]:focus{outline:2px solid var(--brand); outline-offset:0; border-color:var(--brand)}
@@ -663,7 +666,7 @@ var I18N = {
   }
 };
 var LOCALE = {pt:"pt-BR", en:"en-US", es:"es-ES"};
-var LAST_UPDATE = "2026-06-19"; /* << atualize esta data sempre que editar a calculadora */
+var LAST_UPDATE = "2026-06-18"; /* << atualize esta data sempre que editar a calculadora */
 
 var P3_TIERS = [
   {c:300000,d:5},{c:1500000,d:6},{c:3000000,d:7},{c:15000000,d:8},
